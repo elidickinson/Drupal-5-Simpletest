@@ -723,9 +723,24 @@ class DrupalTestCase extends WebTestCase {
          * Confirm that current URL in browser matches one specified
          */
         function assertCurrentUrl($path, $query=NULL, $fragment=NULL) {
-      		$this->assertEqual(url($path,$query,$fragment,TRUE),$this->getUrl());
-      	}
+          $this->assertEqual(url($path,$query,$fragment,TRUE),$this->getUrl());
+        }
         
+        /**
+         * Returns true if given array contains given string (case insensitive match)
+         */
+        function assertArrayContainsString($array, $string, $msg = NULL) {
+          if(!$msg) {
+            $msg = t('Array contains "%str"',array('%str'=>$string));
+          }
+          foreach($array as $k => $v) {
+            if(stristr($v,$string)) {
+              $this->assertTrue(TRUE,$msg);
+              return;
+            }
+          }
+          $this->assertTrue(FALSE,$msg);
+        }
 
 
 }
