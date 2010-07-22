@@ -46,14 +46,24 @@ class DrupalTestCase extends WebTestCase {
   }
 
   /**
-   * @abstract Brokder for the get function
+   * @abstract Broker for the get function
    * adds the authentication headers if necessary
+   * 
+   * 
    * @author Earnest Berry III <earnest.berry@gmail.com>
    *
    * @param url string Url to retch
+   * @param check_response bool If true (default) it will make sure the response is
+   * not a 4XX or 5XX response code.
    * @return void
    */
-  function drupalGet($url) {
+  function drupalGet($url, $check_response = TRUE) {
+    
+    // Since we rarely want relative URLs, make sure its either absolute or starts with a '/' (eli)
+		if(!preg_match('#^(/|https?://)#i',$url)) {
+			$url = '/' . $url;
+		}
+    
     $html = $this->_browser->get($url);
     
     if( $this->drupalCheckAuth(true) ) {
@@ -62,6 +72,13 @@ class DrupalTestCase extends WebTestCase {
     
     $this->_content = $this->_browser->getContent();
     
+    // added by eli
+    if($check_response) {
+      $resp = $this->_browser->getResponseCode();
+      if($resp >= 400)
+        $this->assertTrue(($resp < 400), t("Drupal Get of %url returned status code %resp",array('%url'=>$url,'%resp'=>$resp)));
+    }
+
     return $html;
   }
 
@@ -149,14 +166,27 @@ class DrupalTestCase extends WebTestCase {
   function drupalGetContent() {
     return $this->_content;
   }
+  
+  /**
+   * Raw output of last page loaded by browser
+   */
+  function drupalGetRawPage() {
+    return $this->_browser->_raw;
+  }
 
   /**
    * Generates a random string, to be used as name or whatever
+   * 
+   * Removed underscore from charset. You can add back it by setting $additional_chars
+   * to '_'. 
+   * 
    * @param integer $number   number of characters
+   * @param additional_chars string Any additional characters to add to possible char
+   * set besides numbers and letters.
    * @return ransom string
    */
-  function randomName($number = 4, $prefix = 'simpletest_') {
-    $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_';
+  function randomName($number = 4, $prefix = 'simpletest_', $additional_chars = '') {
+    $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' . $additional_chars;
     for ($x = 0; $x < $number; $x++) {
         $prefix .= $chars{mt_rand(0, strlen($chars)-1)};
         if ($x == 0) {
@@ -688,6 +718,14 @@ class DrupalTestCase extends WebTestCase {
                     (boolean)preg_match($pattern, $content),
                     "Expected pattern match [$pattern] in PHP error [$content] severity [$severity] in [$file] line [$line]");
         }
+        
+        /**
+         * Confirm that current URL in browser matches one specified
+         */
+        function assertCurrentUrl($path, $query=NULL, $fragment=NULL) {
+      		$this->assertEqual(url($path,$query,$fragment,TRUE),$this->getUrl());
+      	}
+        
 
 
 }
