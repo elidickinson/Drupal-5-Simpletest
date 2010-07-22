@@ -1,0 +1,57 @@
+<?php
+// $Id: page_view.test,v 1.8.2.1 2008/01/28 07:57:53 rokZlender Exp $
+class PageViewTest extends DrupalTestCase {
+  /**
+   * Implementation of get_info() for information
+   */
+  function get_info() {
+    return array(
+      'name' => t('Unauthorized node view'),
+      'desc' => t('Creates a node of type page and then an unpermissioned user attempts to edit the node, '
+                . 'before tries with an anonymous user. Asserts failure.'
+                . '</ br>WARNING: This is based on default registered user permuissions (no administer nodes).'),
+      'group' => 'Node Tests',
+    );
+  }
+  
+  function testPageView() {
+    /* Prepare a node to view */
+    global $user;
+    $node = new stdClass();
+    $node->body      = $this->randomName(32);
+    $node->title     = $this->randomName(8);
+    $node->teaser    = $node->body;
+    $node->comment   = '2';
+    $node->created   = time();
+    $node->date      = format_date($node->created, 'custom', 'Y-m-d H:i:s O');
+    $node->format    = '1';
+    $node->moderate  = 0;
+    $node->name      = $user->name;
+    $node->uid       = $user->uid;
+    $node->promote   = 0;
+    $node->revision  = 0;
+    $node->status    = '1';
+    $node->sticky    = 0;
+    $node->type      = 'page';
+    $node->revisions = NULL;
+    $node->changed   = $node->created;
+    $node->taxonomy  = NULL;
+    node_save($node);
+    $this->assertNotNull(node_load($node->nid), 'Node created');
+
+    /* Tries to edit with anonymous user */
+    $html = $this->drupalGet(url("node/$node->nid/edit", NULL, NULL, TRUE));
+    $this->assertResponse(403);
+    
+    /* Prepare a user to request the node view */
+    $test_user = $this->drupalCreateUserRolePerm(array('access content'));
+    $this->drupalLoginUser($test_user);
+    
+    $html = $this->drupalGet(url("node/$node->nid/edit", NULL, NULL, TRUE));
+    $this->assertResponse(403);
+    
+    $test_user = $this->drupalCreateUserRolePerm(array('administer nodes'));
+    node_delete(array('nid' => $node->nid));
+  }
+}
+?>

@@ -1,0 +1,10 @@
+; $Id: simpletest_xmlrpc.info,v 1.2.2.1 2007/11/29 10:26:16 rokZlender Exp $
+name = Simpletest_xmlrpc
+description = Supports the simpletest module for the xmlrpc tests. Does not need to manually enabled.
+package = Simpletest
+
+; Information added by drupal.org packaging script on 2008-09-01
+version = "5.x-1.2"
+project = "simpletest"
+datestamp = "1220308519"
+

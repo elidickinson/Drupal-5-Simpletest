@@ -1,0 +1,9 @@
+; $Id $
+name = "SimpleTest module"
+description = "Provides simpletest classes to developers as well as some standard tests for Drupal"
+package = Simpletest
+; Information added by drupal.org packaging script on 2008-09-01
+version = "5.x-1.2"
+project = "simpletest"
+datestamp = "1220308519"
+
